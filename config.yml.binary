@@ -1,0 +1,30 @@
+sync_policy:
+  allowed_user_prefixes:
+    - "nc_"
+    - "admin_nc_"
+  default_postgres_group: "g_ldapusers"
+
+databases:
+  - alias: "local_postgres_test"
+    postgres:
+      host: "localhost"
+      port: 5433
+      user: "pgadmin"
+      dbname: "myapp_db"
+      sslmode: "disable"
+    roles:
+      - postgres_role: "ldap_db_admins"
+        ldap_group_cn: "db_admins"
+      - postgres_role: "ldap_readonly_users"
+        ldap_group_cn: "readonly_users"
+
+ldap:
+  host: "localhost"
+  port: 636
+  base_dn: "dc=example,dc=org"
+  group_search_base: "ou=groups,dc=example,dc=org"
+  user_search_base: "ou=users,dc=example,dc=org"
+  use_tls: true
+  skip_tls_verify: true
+  ca_cert_path: ""
+

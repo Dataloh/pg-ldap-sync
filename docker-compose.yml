@@ -1,0 +1,77 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: pgadmin
+      POSTGRES_PASSWORD: supersecretpassword
+      POSTGRES_DB: myapp_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d
+    networks:
+      - dev-net
+
+  ldap:
+    image: bitnami/openldap:latest
+    container_name: openldap
+    restart: always
+    ports:
+      - "1389:1389"
+      - "636:636"
+    environment:
+      LDAP_ADMIN_PASSWORD: "adminpassword"
+      LDAP_ENABLE_TLS: "yes"
+      LDAP_REQUIRE_TLS: "no"
+      LDAP_LDAPS_PORT_NUMBER: "636"
+      LDAP_TLS_CERT_FILE: "/certs/ldap.crt"
+      LDAP_TLS_KEY_FILE: "/certs/ldap.key"
+      LDAP_TLS_CA_FILE: "/certs/ldap.crt"
+    volumes:
+      - ldap_data:/bitnami/openldap
+      - ./ldap-certs:/certs:ro
+    networks:
+      - dev-net
+    healthcheck:
+      # This command checks if the LDAPS port is responsive.
+      test: ["CMD-SHELL", "ldapsearch -x -H ldap://localhost:1389 -b dc=example,dc=org || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  ldap-init:
+    # We can use the same image as it contains the client tools
+    image: bitnami/openldap:latest
+    container_name: ldap-init
+    restart: on-failure
+    # This is the magic: it waits for the ldap service to pass its healthcheck
+    depends_on:
+      ldap:
+        condition: service_healthy
+    environment:
+      LDAP_ADMIN_PASSWORD: "adminpassword" # Pass the password to the script
+    volumes:
+      # Mount the LDIF files you want to import
+      - ./ldap-init/data:/ldifs-to-import:ro
+    networks:
+      - dev-net
+    command: >
+      bash -c "
+        echo 'LDAP service is healthy. Seeding data...';
+        ldapadd -x -H ldap://ldap:1389 -D 'cn=admin,dc=example,dc=org' -w \"$$LDAP_ADMIN_PASSWORD\" -f /ldifs-to-import/01-users.ldif &&
+        ldapadd -x -H ldap://ldap:1389 -D 'cn=admin,dc=example,dc=org' -w \"$$LDAP_ADMIN_PASSWORD\" -f /ldifs-to-import/02-groups.ldif;
+        echo 'Data seeding complete.';
+      "
+
+networks:
+  dev-net:
+    driver: bridge
+
+volumes:
+  pgdata:
+  ldap_data:
+

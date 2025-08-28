@@ -1,0 +1,14 @@
+# Groups
+dn: cn=db_admins,ou=groups,dc=example,dc=org
+objectClass: groupOfNames
+cn: db_admins
+description: Users with admin access to PostgreSQL
+member: cn=nc_jdoe,ou=users,dc=example,dc=org
+member: cn=admin_nc_asmith,ou=users,dc=example,dc=org
+
+dn: cn=readonly_users,ou=groups,dc=example,dc=org
+objectClass: groupOfNames
+cn: readonly_users
+description: Users with read-only access
+member: cn=nc_bcarter,ou=users,dc=example,dc=org
+

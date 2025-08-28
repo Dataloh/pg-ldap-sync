@@ -1,0 +1,34 @@
+# People / Users
+dn: cn=nc_jdoe,ou=users,dc=example,dc=org
+objectClass: inetOrgPerson
+cn: nc_jdoe
+sn: Doe
+uid: nc_jdoe
+mail: jdoe@mycompany.dev
+userPassword: password123
+
+dn: cn=admin_nc_asmith,ou=users,dc=example,dc=org
+objectClass: inetOrgPerson
+cn: admin_nc_asmith
+sn: Smith
+uid: admin_nc_asmith
+mail: asmith@mycompany.dev
+userPassword: password123
+
+dn: cn=nc_bcarter,ou=users,dc=example,dc=org
+objectClass: inetOrgPerson
+cn: nc_bcarter
+sn: Carter
+uid: nc_bcarter
+mail: bcarter@mycompany.dev
+userPassword: password123
+
+# This user has no valid prefix and should be ignored by the sync.
+dn: cn=davis,ou=users,dc=example,dc=org
+objectClass: inetOrgPerson
+cn: davis
+sn: Avis
+uid: davis
+mail: davis@mycompany.dev
+userPassword: password123
+
