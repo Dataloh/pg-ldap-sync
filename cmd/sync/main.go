@@ -6,6 +6,7 @@ import (
     "path/filepath"
     "strings"
     "time"
+    "os"
 
     "github.com/Dataloh/pg-ldap-sync/internal/config"
     "github.com/Dataloh/pg-ldap-sync/internal/ldap"
@@ -123,10 +124,19 @@ func main() {
 
 // getConfigPath determines the path to the config.yml file.
 func getConfigPath() string {
-    configPath, err := filepath.Abs("./config.yml")
-    if err != nil {
-        log.Fatalf("Cannot determine absolute path for config file: %v", err)
-    }
+	if cfgPath := os.Getenv("CFG_PATH"); cfgPath != "" {
+		configPath, err := filepath.Abs(cfgPath)
+		if err != nil {
+			log.Fatalf("Cannot determine absolute path for config file: %v", err)
+		}
+
+		return configPath
+	} 
+	configPath, err := filepath.Abs("/opt/pg-ldap-sync/config.yml")
+	if err != nil {
+		log.Fatalf("Cannot determine absolute path for config file: %v", err)
+	}
+
     return configPath
 }
 

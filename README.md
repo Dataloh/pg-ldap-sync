@@ -78,10 +78,10 @@ The primary difference is the `host` setting for services. When running inside a
 databases:
   - alias: "local_postgres_test"
     postgres:
-      host: "postgres"         # Service name in Docker Compose
+      host: "postgres"
 # ...
 ldap:
-  host: "openldap"             # Service name in Docker Compose
+  host: "openldap"
 # ...
 ```
 
@@ -91,9 +91,10 @@ Secrets are provided via environment variables. The test scripts load these from
 | Variable             | Description                                |
 | -------------------- | ------------------------------------------ |
 | `PG_PASSWORD`        | The password for the PostgreSQL admin user.|
-| `LDAP_BIND_DN`       | The DN of the LDAP user for binding.       |
 | `LDAP_BIND_PASSWORD` | The password for the LDAP bind user.       |
+| `CFG_PATH`           | The path to config.yml (optional)          |
 
+The path to config.yml defaults to /opt/pg-ldap-sync/config.yml
 
 ## Testing the Application
 
@@ -149,7 +150,6 @@ For environments where Kubernetes is not available, the application can be run a
     ```sh
     # /opt/pg-ldap-sync/secrets.env
     export PG_PASSWORD="supersecretpassword"
-    export LDAP_BIND_DN="cn=binder,dc=example,dc=com"
     export LDAP_BIND_PASSWORD="bindpassword"
     ```
 4.  **Create Cron Job:** Edit the crontab (`crontab -e`) to add an entry that sources the environment variables and runs the binary on a schedule.

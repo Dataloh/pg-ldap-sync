@@ -21,6 +21,7 @@ databases:
 ldap:
   host: "localhost"
   port: 636
+  bind_dn: "cn=admin,dc=example,dc=org"
   base_dn: "dc=example,dc=org"
   group_search_base: "ou=groups,dc=example,dc=org"
   user_search_base: "ou=users,dc=example,dc=org"

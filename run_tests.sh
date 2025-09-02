@@ -17,8 +17,8 @@ log_success() {
 run_sync_job() {
   log_step "Running Go sync job..."
   export PG_PASSWORD="supersecretpassword"
-  export LDAP_BIND_DN="cn=admin,dc=example,dc=org"
   export LDAP_BIND_PASSWORD="adminpassword"
+  export CFG_PATH="./config.yml"
   go run ./cmd/sync/main.go
 }
 

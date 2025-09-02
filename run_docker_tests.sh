@@ -17,13 +17,14 @@ log_success() {
 run_sync_job() {
   log_step "Running Go sync job..."
   export PG_PASSWORD="supersecretpassword"
-  export LDAP_BIND_DN="cn=admin,dc=example,dc=org"
   export LDAP_BIND_PASSWORD="adminpassword"
+  export CFG_PATH="./config.yml"
 
   docker run \
       -e PG_PASSWORD \
       -e LDAP_BIND_DN \
       -e LDAP_BIND_PASSWORD \
+      -e CFG_PATH \
       --network pg-ldap-sync_dev-net \
       --rm \
       pg-ldap-sync:latest

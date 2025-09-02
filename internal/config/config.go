@@ -77,10 +77,6 @@ func Load(path string) (*Config, error) {
 		}
 	}
 
-	if ldapBindDN := os.Getenv("LDAP_BIND_DN"); ldapBindDN != "" {
-		cfg.LDAP.BindDN = ldapBindDN
-	}
-
 	if ldapPassword := os.Getenv("LDAP_BIND_PASSWORD"); ldapPassword != "" {
 		cfg.LDAP.BindPassword = ldapPassword
 	}
