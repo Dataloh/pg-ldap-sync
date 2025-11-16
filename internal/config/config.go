@@ -49,7 +49,9 @@ type LDAPConfig struct {
 	BindPassword      string `yaml:"bind_password"`
 	BaseDN            string `yaml:"base_dn"`
 	GroupSearchBase   string `yaml:"group_search_base"`
+	GroupObjectClass  string `yaml:"group_object_class"`
 	UserSearchBase    string `yaml:"user_search_base"`
+	UserObjectClass   string `yaml:"user_object_class"`
 	UseTLS            bool   `yaml:"use_tls"`
     SkipTLSVerify     bool   `yaml:"skip_tls_verify"`
 	CACertPath        string `yaml:"ca_cert_path"`

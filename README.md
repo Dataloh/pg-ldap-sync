@@ -26,12 +26,10 @@ The application runs as a periodic job, ensuring that PostgreSQL role membership
 ├── internal/                   # Internal Go packages (config, ldap, postgres)
 ├── ldap-init/                  # LDIF files for populating the test LDAP server
 ├── postgres-init/              # SQL scripts for initializing the test Postgres server
-├── config.yml.binary           # Config for local binary testing (host: localhost)
-├── config.yml.docker           # Config for Docker container testing (host: postgres)
+├── config.yml                  # Config for Docker container testing (host: postgres)
 ├── Dockerfile                  # Dockerfile for the Go sync application
 ├── docker-compose.yml          # Defines the complete Docker test environment
-├── run_docker_tests.sh         # E2E test script that runs the app as a Docker container
-├── run_tests.sh                # E2E test script that runs the app as a local binary
+├── run_tests.sh                # E2E test script that runs the app as a Docker container
 └── go.mod                      # Go module definition
 ```
 
@@ -67,23 +65,7 @@ Follow these steps to set up the Docker-based environment for local testing.
 
 ## Configuration
 
-The application is configured using a YAML file and environment variables. Note there are two config files provided for the different testing modes.
-
-### `config.yml.docker` vs. `config.yml.binary`
-The primary difference is the `host` setting for services. When running inside a Docker container, the app uses the service name (`postgres`, `openldap`). When running as a local binary, it uses `localhost`.
-
-**Example (`config.yml.docker`):**
-```yaml
-# ...
-databases:
-  - alias: "local_postgres_test"
-    postgres:
-      host: "postgres"
-# ...
-ldap:
-  host: "openldap"
-# ...
-```
+The application is configured using a YAML file and environment variables.
 
 ### Environment Variables
 Secrets are provided via environment variables. The test scripts load these from a local `.env` file if it exists.
@@ -100,8 +82,8 @@ The path to config.yml defaults to /opt/pg-ldap-sync/config.yml
 
 Two comprehensive test scripts are provided to validate the system's functionality.
 
-### Option 1: Local Binary Test (`run_tests.sh`)
-This script builds the Go binary on your local machine and runs it directly against the Dockerized services (Postgres, LDAP). This is ideal for rapid development and debugging.
+### Docker Container Test (`run_tests.sh`)
+This script builds the application into a Docker image and runs the sync job as a container. This method provides a test that is closer to a production deployment.
 
 1.  **Make the script executable:**
     ```sh
@@ -110,19 +92,6 @@ This script builds the Go binary on your local machine and runs it directly agai
 2.  **Execute the script:**
     ```sh
     ./run_tests.sh
-    ```
-    The script will start a fresh environment, run a series of tests using the local binary and `config.yml.binary`, and report the results before cleaning up.
-
-### Option 2: Docker Container Test (`run_docker_tests.sh`)
-This script builds the application into a Docker image and runs the sync job as a container. This method provides a test that is closer to a production deployment.
-
-1.  **Make the script executable:**
-    ```sh
-    chmod +x run_docker_tests.sh
-    ```
-2.  **Execute the script:**
-    ```sh
-    ./run_docker_tests.sh
     ```
     The script will start a fresh environment, run tests using the `pg-ldap-sync` container and `config.yml.docker`, and report the results.
 

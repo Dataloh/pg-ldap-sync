@@ -18,9 +18,16 @@ run_sync_job() {
   log_step "Running Go sync job..."
   export PG_PASSWORD="supersecretpassword"
   export LDAP_BIND_PASSWORD="adminpassword"
-  export CFG_PATH="./config.yml"
-  go run ./cmd/sync/main.go
-}
+
+  docker run \
+      -e PG_PASSWORD \
+      -e LDAP_BIND_DN \
+      -e LDAP_BIND_PASSWORD \
+      -e CFG_PATH \
+      --network pg-ldap-sync_dev-net \
+      --rm \
+      pg-ldap-sync:latest
+  }
 
 # ... (All verify_* helper functions are unchanged) ...
 verify_membership() {
@@ -54,25 +61,18 @@ cleanup() {
   log_step "Cleaning up..."
   sudo docker compose down -v
   rm -f *.ldif.tmp
-  rm config.yml
   log_success "Test environment cleaned up."
 }
 trap cleanup EXIT
 
-log_step "SETUP: Creating symlink for config.file"
-ln -s config.yml.binary config.yml
-
 log_step "SETUP: Starting Docker environment"
 sudo docker compose down -v
 sudo docker compose up -d --build
-sleep 5
+sleep 3
 
-#log_step "SETUP: Populating LDAP and PostgreSQL"
-#(sudo docker exec openldap ldapadd -x -H ldap://localhost:1389 -D "cn=admin,dc=example,dc=org" -w "adminpassword" -f /docker-entrypoint-initdb.d/01-ous.ldif) || [ $? -eq 68 ]
-#log_success "LDAP OUs are present."
-#sudo docker exec openldap ldapadd -x -H ldap://localhost:1389 -D "cn=admin,dc=example,dc=org" -w "adminpassword" -f /docker-entrypoint-initdb.d/02-users.ldif
-#sudo docker exec openldap ldapadd -x -H ldap://localhost:1389 -D "cn=admin,dc=example,dc=org" -w "adminpassword" -f /docker-entrypoint-initdb.d/03-groups.ldif
-#sudo docker exec -it postgres psql -U pgadmin -d myapp_db -c "CREATE ROLE ldap_db_admins WITH NOLOGIN; CREATE ROLE ldap_readonly_users WITH NOLOGIN; CREATE ROLE g_ldapusers WITH NOLOGIN;"
+log_step "SETUP: Building Docker image"
+docker build . -t pg-ldap-sync
+
 #log_success "SETUP: Complete"
 log_step "DATABASE STATE BEFORE TESTS"
 sudo docker exec -it postgres psql -U pgadmin -d myapp_db -c "\du"

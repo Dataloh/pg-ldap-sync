@@ -19,22 +19,25 @@ COPY . .
 # -ldflags "-s -w" strips debugging information, making the binary smaller.
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /app/pg-ldap-sync ./cmd/sync/main.go
 
-
 # --- Final Stage ---
-# Use a minimal 'scratch' image which contains nothing, for maximum security and smallest size.
-FROM scratch
+# Use alpine as it's small and includes user management tools
+FROM alpine:latest
+
+# Create a non-root user and group named 'appuser'
+# We use a static UID/GID (e.g., 1001) for predictability
+RUN addgroup -S appgroup -g 1001 && adduser -S appuser -u 1001 -G appgroup
 
 # Set the working directory
 WORKDIR /app
 
-# Copy the compiled binary from the builder stage
-COPY --from=builder /app/pg-ldap-sync .
+# Copy the binary from the builder stage and set ownership to our new user
+COPY --from=builder --chown=appuser:appgroup /app/pg-ldap-sync .
 
-# Copy the default configuration file into the image.
-# This serves as a fallback and as documentation. In a real deployment,
-# this file will be overridden by a volume mount.
-COPY config.yml .
+# Make sure the user can read it.
+COPY --chown=appuser:appgroup config.yml /opt/pg-ldap-sync/config.yml
 
-# Set the entrypoint for the container. When the container starts, it will run this command.
+# Switch to the non-root user
+USER appuser
+
+# Set the entrypoint
 ENTRYPOINT ["/app/pg-ldap-sync"]
-

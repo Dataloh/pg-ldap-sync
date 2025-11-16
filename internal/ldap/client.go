@@ -175,7 +175,7 @@ func (c *Client) fetchMembersRecursive(groupDN string, userIDs map[string]bool, 
         } else {
             // --- BASE CASE ---
             // If it's not a group, assume it's a user and try to get its 'uid'.
-            uid := memberEntry.GetAttributeValue("uid")
+            uid := memberEntry.GetAttributeValue(c.config.UserObjectClass)
             if uid == "" {
                 log.Printf("Warning: Member with DN '%s' is not a group and has no 'uid' attribute. Skipping.", memberDN)
                 continue
@@ -196,7 +196,7 @@ func (c *Client) findGroupDN(groupCN string) (string, error) {
         ldap.ScopeWholeSubtree,
         ldap.NeverDerefAliases,
         0, 0, false,
-        fmt.Sprintf("(&(objectClass=groupOfNames)(cn=%s))", ldap.EscapeFilter(groupCN)),
+        fmt.Sprintf("(&(objectClass=%s)(cn=%s))",c.config.GroupObjectClass, ldap.EscapeFilter(groupCN)),
         []string{"dn"}, // We only need the DN.
         nil,
     )
@@ -222,7 +222,7 @@ func (c *Client) getObject(dn string) (*ldap.Entry, error) {
         ldap.NeverDerefAliases,
         0, 0, false,
         "(objectClass=*)",
-        []string{"objectClass", "uid"}, // Fetch attributes we care about.
+        []string{"objectClass", c.config.UserObjectClass},
         nil,
     )
 

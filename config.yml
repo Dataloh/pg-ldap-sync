@@ -7,8 +7,8 @@ sync_policy:
 databases:
   - alias: "local_postgres_test"
     postgres:
-      host: "localhost"
-      port: 5433
+      host: "postgres" # Use the service name
+      port: 5432       # Use the internal container port
       user: "pgadmin"
       dbname: "myapp_db"
       sslmode: "disable"
@@ -19,13 +19,15 @@ databases:
         ldap_group_cn: "readonly_users"
 
 ldap:
-  host: "localhost"
+  host: "openldap" # Use the service name
   port: 636
-  bind_dn: "cn=admin,dc=example,dc=org"
   base_dn: "dc=example,dc=org"
+  bind_dn: "cn=admin,dc=example,dc=org"
   group_search_base: "ou=groups,dc=example,dc=org"
+  group_object_class: "groupOfNames"
   user_search_base: "ou=users,dc=example,dc=org"
+  user_object_class: "uid"
   use_tls: true
   skip_tls_verify: true
-  ca_cert_path: ""
+  ca_cert_path: "" # The path INSIDE the sync container
 
