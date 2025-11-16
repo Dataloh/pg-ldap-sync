@@ -1,33 +1,44 @@
+# Synchronization policy settings
 sync_policy:
+  # Only LDAP users whose usernames start with these prefixes are allowed
   allowed_user_prefixes:
     - "nc_"
     - "admin_nc_"
+
+  # Default Postgres always assigned to users
   default_postgres_group: "g_ldapusers"
 
+# Database connection and role-mapping configuration
 databases:
-  - alias: "local_postgres_test"
+  - alias: "local_postgres_test"   # Friendly name for this DB connection
     postgres:
-      host: "postgres" # Use the service name
-      port: 5432       # Use the internal container port
-      user: "pgadmin"
-      dbname: "myapp_db"
-      sslmode: "disable"
+      host: "postgres"             # Postgres host
+      port: 5432                   # Postgres port
+      user: "pgadmin"              # Login user for Postgres
+      dbname: "myapp_db"           # Target database
+      sslmode: "disable"           # SSL disabled for connection
     roles:
+      # Maps the LDAP group 'db_admins' to Postgres role 'ldap_db_admins'
       - postgres_role: "ldap_db_admins"
         ldap_group_cn: "db_admins"
+
+      # Maps the LDAP group 'readonly_users' to Postgres role 'ldap_readonly_users'
       - postgres_role: "ldap_readonly_users"
         ldap_group_cn: "readonly_users"
 
+# LDAP server configuration
 ldap:
-  host: "openldap" # Use the service name
-  port: 636
-  base_dn: "dc=example,dc=org"
-  bind_dn: "cn=admin,dc=example,dc=org"
-  group_search_base: "ou=groups,dc=example,dc=org"
-  group_object_class: "groupOfNames"
-  user_search_base: "ou=users,dc=example,dc=org"
-  user_object_class: "uid"
-  use_tls: true
-  skip_tls_verify: true
-  ca_cert_path: "" # The path INSIDE the sync container
+  host: "openldap"                  # LDAP host
+  port: 636                         # LDAPS port (secure LDAP)
+  base_dn: "dc=example,dc=org"      # Base search DN
+  bind_dn: "cn=admin,dc=example,dc=org"  # Bind user for LDAP queries
 
+  group_search_base: "ou=groups,dc=example,dc=org"   # Where groups are located
+  group_object_class: "groupOfNames"                  # LDAP group object class
+
+  user_search_base: "ou=users,dc=example,dc=org"      # Where users are located
+  user_object_class: "uid"                            # LDAP user object class attribute
+
+  use_tls: true               # Enable TLS for LDAP
+  skip_tls_verify: true       # Skip certificate verification
+  ca_cert_path: ""            # Optional CA certificate path

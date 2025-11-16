@@ -66,6 +66,91 @@ Follow these steps to set up the Docker-based environment for local testing.
 ## Configuration
 
 The application is configured using a YAML file and environment variables.
+### YAML configuration
+#### **sync_policy**
+
+```yaml
+sync_policy:
+  allowed_user_prefixes:
+    - "nc_"
+    - "admin_nc_"
+  default_postgres_group: "g_ldapusers"
+```
+
+##### Explanation
+
+| Key                      | Description                                                                 |
+| ------------------------ | --------------------------------------------------------------------------- |
+| `allowed_user_prefixes`  | Only users whose usernames begin with these prefixes will be synced.        |
+| `default_postgres_group` | PostgreSQL group always assigned to users |
+
+---
+
+#### **databases**
+
+```yaml
+databases:
+  - alias: "local_postgres_test"
+    postgres:
+      host: "postgres"
+      port: 5432
+      user: "pgadmin"
+      dbname: "myapp_db"
+      sslmode: "disable"
+    roles:
+      - postgres_role: "ldap_db_admins"
+        ldap_group_cn: "db_admins"
+      - postgres_role: "ldap_readonly_users"
+        ldap_group_cn: "readonly_users"
+```
+
+##### Explanation
+
+| Key                | Description                                                 |
+| ------------------ | ----------------------------------------------------------- |
+| `alias`            | Friendly name for this database connection.                 |
+| `postgres.host`    | Hostname of the PostgreSQL server.                          |
+| `postgres.user`    | User used for connecting to the database.                   |
+| `postgres.dbname`  | Target database name.                                       |
+| `postgres.sslmode` | SSL mode (`disable`, `require`, etc.).                      |
+| `roles`            | Maps LDAP groups (via `ldap_group_cn`) to PostgreSQL roles. |
+
+---
+
+#### **ldap**
+
+```yaml
+ldap:
+  host: "openldap"
+  port: 636
+  base_dn: "dc=example,dc=org"
+  bind_dn: "cn=admin,dc=example,dc=org"
+  group_search_base: "ou=groups,dc=example,dc=org"
+  group_object_class: "groupOfNames"
+  user_search_base: "ou=users,dc=example,dc=org"
+  user_object_class: "uid"
+  use_tls: true
+  skip_tls_verify: true
+  ca_cert_path: ""
+```
+
+##### Explanation
+
+| Key                  | Description                                                  |
+| -------------------- | ------------------------------------------------------------ |
+| `host` / `port`      | LDAP server connection details (`636` = LDAPS).              |
+| `base_dn`            | Base DN for all LDAP directory searches.                     |
+| `bind_dn`            | LDAP admin/service account used for binding.                 |
+| `group_search_base`  | DN under which groups are searched.                          |
+| `group_object_class` | LDAP object class representing groups.                       |
+| `user_search_base`   | DN under which users are searched.                           |
+| `user_object_class`  | Attribute identifying users (e.g., `uid`).                   |
+| `use_tls`            | Enables TLS for secure LDAP.                                 |
+| `skip_tls_verify`    | Allows skipping certificate verification (use with caution). |
+| `ca_cert_path`       | Optional path to a custom CA certificate.                    |
+
+
+
 
 ### Environment Variables
 Secrets are provided via environment variables. The test scripts load these from a local `.env` file if it exists.
