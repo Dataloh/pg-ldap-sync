@@ -40,7 +40,7 @@ func main() {
 
         pgClient := postgres.NewClient(dbCfg.Postgres)
         if err := pgClient.Connect(ctx); err != nil {
-            log.Printf("ERROR: Could not connect to PostgreSQL database '%s': %v. Skipping.", dbCfg.Alias, err)
+            log.Fatalf("ERROR: Could not connect to PostgreSQL database '%s': %v. Skipping.", dbCfg.Alias, err)
             continue
         }
 
@@ -84,7 +84,7 @@ func main() {
         provCtx, cancelProv := context.WithTimeout(ctx, 60*time.Second)
         log.Println("Phase 1: Ensuring all valid users exist in PostgreSQL...")
         if err := pgClient.EnsureUsersExist(provCtx, usersToCreate, cfg.SyncPolicy.DefaultPostgresGroup); err != nil {
-            log.Printf("ERROR during user provisioning phase: %v. Skipping membership sync for this DB.", err)
+            log.Fatalf("ERROR during user provisioning phase: %v. Skipping membership sync for this DB.", err)
             cancelProv()
             pgClient.Close()
             continue
@@ -99,7 +99,7 @@ func main() {
             syncCtx, cancelSync := context.WithTimeout(ctx, 30*time.Second)
             err = pgClient.SyncRoleMembership(syncCtx, pgRole, members, cfg.SyncPolicy.AllowedUserPrefixes)
             if err != nil {
-                log.Printf("    ERROR: Failed to sync role membership: %v", err)
+                log.Fatalf("    ERROR: Failed to sync role membership: %v", err)
             } else {
                 log.Printf("    SUCCESS: PostgreSQL role '%s' is synchronized.", pgRole)
             }
@@ -110,7 +110,7 @@ func main() {
         // == Phase 3: Deprovisioning ==
         deprovisionCtx, cancelDeprov := context.WithTimeout(ctx, 30*time.Second)
         if err := pgClient.DeprovisionUsers(deprovisionCtx, allValidLdapUsers, cfg.SyncPolicy.DefaultPostgresGroup, cfg.SyncPolicy.AllowedUserPrefixes); err != nil {
-            log.Printf("ERROR: Failed to deprovision users: %v", err)
+            log.Fatalf("ERROR: Failed to deprovision users: %v", err)
         } else {
             log.Println("Phase 3: Deprovisioning complete.")
         }

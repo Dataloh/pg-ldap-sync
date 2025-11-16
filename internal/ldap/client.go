@@ -177,7 +177,7 @@ func (c *Client) fetchMembersRecursive(groupDN string, userIDs map[string]bool, 
             // If it's not a group, assume it's a user and try to get its 'uid'.
             uid := memberEntry.GetAttributeValue(c.config.UserObjectClass)
             if uid == "" {
-                log.Printf("Warning: Member with DN '%s' is not a group and has no 'uid' attribute. Skipping.", memberDN)
+                log.Printf("Warning: Member with DN '%s' is not a group and has no '%s' attribute. Skipping.", memberDN, c.config.UserObjectClass)
                 continue
             }
             if !userIDs[uid] {
